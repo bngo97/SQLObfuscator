@@ -1,5 +1,6 @@
 import sys
 from random import randint, random
+import re
 
 
 class Obfuscator:
@@ -27,7 +28,10 @@ class Obfuscator:
                 obfuscations.append(self._generate_or_clause())
 
         obfuscations.insert(0, command)
-        return ' '.join(obfuscations)
+        result = ' '.join(obfuscations)
+        if random() > 0.28:
+            result = self._mask_integers(result)
+        return result
 
     def _generate_and_clause(self) -> str:
         num = randint(0, 9)
@@ -37,6 +41,24 @@ class Obfuscator:
         left = randint(0, 1000)
         right = left + randint(1, 1000)
         return str(left) + '=' + str(right)
+
+    def _mask_integers(
+            self,
+            s: str,
+    ) -> str:
+        i = re.finditer('\d+', s)
+        i = list(i)
+        i.reverse()
+
+        for m in i:
+            start = int(m.start(0))
+            end = int(m.end(0))
+            rand = randint(1, 1000)
+            num = rand + int(s[start:end])
+            exp = str(num) + '-' + str(rand)
+            s = s[:start] + exp + s[end:]
+
+        return s
 
 
 if __name__ == '__main__':
